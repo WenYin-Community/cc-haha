@@ -58,7 +58,7 @@ describe('release desktop workflow', () => {
     expect(workflow.indexOf('Verify macOS launch policy')).toBeLessThan(workflow.indexOf('Upload release artifacts for final publish'))
   })
 
-  test('release workflow fails globally before matrix fan-out when signing or notarization secrets are missing', () => {
+  test('release workflow blocks on macOS signing/notarization secrets and warns for Windows signing', () => {
     const workflow = readReleaseWorkflow()
     const signingJob = workflow.match(
       /signing-preflight:[\s\S]*?(?:\n {2}[a-zA-Z0-9_-]+:|$)/,
@@ -72,12 +72,28 @@ describe('release desktop workflow', () => {
       'APPLE_ID',
       'APPLE_APP_SPECIFIC_PASSWORD',
       'APPLE_TEAM_ID',
+    ]) {
+      expect(signingJob).toContain(secret)
+    }
+    for (const secret of [
       'WINDOWS_CERTIFICATE',
       'WINDOWS_CERTIFICATE_PASSWORD',
     ]) {
       expect(signingJob).toContain(secret)
     }
-    expect(signingJob).toContain('Missing required release signing/notarization secrets')
+    expect(signingJob).toContain('Missing required macOS signing/notarization secrets')
+    expect(signingJob).toContain('Windows signing secrets missing')
+    expect(signingJob).toContain('::warning::Windows signing secrets missing')
+
+    const macRequiredBlock = signingJob?.match(
+      /missing=\(\)[\s\S]*?# Windows signing is optional:/,
+    )?.[0]
+    const windowsOptionalBlock = signingJob?.match(
+      /win_missing=\(\)[\s\S]*?fi\n/,
+    )?.[0]
+    expect(macRequiredBlock).toContain('exit 1')
+    expect(windowsOptionalBlock).toContain('::warning::')
+    expect(windowsOptionalBlock).not.toContain('exit 1')
     expect(buildJob).toContain('- quality-preflight')
     expect(buildJob).toContain('- signing-preflight')
     expect(workflow.indexOf('signing-preflight:')).toBeLessThan(workflow.indexOf('build:'))
