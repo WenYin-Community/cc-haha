@@ -392,6 +392,30 @@ describe('packaged artifact inspection', () => {
     expect(report.passedChecks.some((check) => check.label.includes('update metadata referenced artifact'))).toBe(true)
   })
 
+  test('accepts Linux RPM as a valid packaged artifact', async () => {
+    const rootDir = createRepoRoot()
+    tempDirs.push(rootDir)
+
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/Claude-Code-Haha-0.3.1-x64.AppImage')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/claude-code-desktop_0.3.1_amd64.deb')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/Claude-Code-Haha-0.3.1-x64.rpm')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/linux-unpacked/resources/app.asar')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/linux-unpacked/resources/app-update.yml')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/linux-unpacked/resources/app.asar.unpacked/src-tauri/binaries/claude-sidecar-x86_64-unknown-linux-gnu')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/linux-unpacked/resources/app.asar.unpacked/node_modules/node-pty/package.json')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/linux-unpacked/resources/app.asar.unpacked/node_modules/node-pty/prebuilds/linux-x64/pty.node')
+    writeFile(rootDir, 'desktop/build-artifacts/linux-x64/latest-linux.yml', 'path: Claude-Code-Haha-0.3.1-x64.AppImage\n')
+
+    const report = await inspectPackagedArtifacts(rootDir, {
+      platform: 'linux',
+      packageKind: 'release',
+      artifactsDir: 'desktop/build-artifacts/linux-x64',
+    })
+
+    expect(report.passed).toBe(true)
+    expect(report.packagedArtifacts.some((artifact) => artifact.label === 'Linux rpm package')).toBe(true)
+  })
+
   test('passes Linux release checks for Electron Builder output without AppImage blockmap', async () => {
     const rootDir = createRepoRoot()
     tempDirs.push(rootDir)

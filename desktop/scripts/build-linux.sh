@@ -36,7 +36,7 @@ Usage:
 
 Environment:
   LINUX_ARCH=x64|arm64  Target architecture. Defaults to x64.
-  LINUX_TARGETS         Electron Builder Linux targets. Defaults to "AppImage deb".
+  LINUX_TARGETS         Electron Builder Linux targets. Defaults to "AppImage deb rpm".
   SKIP_INSTALL=1        Skip `bun install` in the repo root and desktop app.
   REBUILD_NATIVE=1      Run `electron-builder install-app-deps` before packaging.
   SKIP_PACKAGE_SMOKE=1  Skip package-smoke verification after copying artifacts.
@@ -61,7 +61,7 @@ for command in bun; do
   fi
 done
 
-read -r -a LINUX_TARGET_ARRAY <<< "${LINUX_TARGETS:-AppImage deb}"
+read -r -a LINUX_TARGET_ARRAY <<< "${LINUX_TARGETS:-AppImage deb rpm}"
 if [[ "${#LINUX_TARGET_ARRAY[@]}" -eq 0 ]]; then
   echo "[build-linux] LINUX_TARGETS must contain at least one electron-builder Linux target." >&2
   exit 1
@@ -112,7 +112,7 @@ else
   echo "[build-linux] Warning: linux-unpacked was not found under ${ELECTRON_OUTPUT_DIR}; package-smoke will only inspect packaged artifacts." >&2
 fi
 
-find "${ELECTRON_OUTPUT_DIR}" -maxdepth 1 -type f \( -name '*.AppImage' -o -name '*.deb' -o -name '*.blockmap' -o -name 'latest-linux*.yml' \) -exec cp -f {} "${CANONICAL_OUTPUT_DIR}/" \;
+find "${ELECTRON_OUTPUT_DIR}" -maxdepth 1 -type f \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.blockmap' -o -name 'latest-linux*.yml' \) -exec cp -f {} "${CANONICAL_OUTPUT_DIR}/" \;
 
 cat > "${CANONICAL_OUTPUT_DIR}/BUILD_INFO.txt" <<EOF
 Target triple: ${TARGET_TRIPLE}

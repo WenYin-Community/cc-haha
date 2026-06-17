@@ -628,7 +628,7 @@ function inspectWindowsArtifacts(rootDir: string, report: PackageSmokeReport) {
 function inspectLinuxArtifacts(rootDir: string, report: PackageSmokeReport) {
   const packagedArtifacts = findMatches(
     report.artifactsDir,
-    (candidate) => candidate.endsWith('.AppImage') || candidate.endsWith('.deb'),
+    (candidate) => candidate.endsWith('.AppImage') || candidate.endsWith('.deb') || candidate.endsWith('.rpm'),
   )
   const unpackedDir = findLinuxUnpackedDir(report.artifactsDir)
   const updateMetadata = findMatches(report.artifactsDir, (candidate) => /latest-linux(?:-[a-z0-9]+)?\.yml$/.test(candidate))
@@ -636,7 +636,7 @@ function inspectLinuxArtifacts(rootDir: string, report: PackageSmokeReport) {
   const releaseMode = report.packageKind === 'release' || (report.packageKind === 'auto' && (packagedArtifacts.length > 0 || updateMetadata.length > 0))
 
   report.packagedArtifacts.push(...packagedArtifacts.map((candidate) => ({
-    label: candidate.endsWith('.deb') ? 'Linux deb package' : 'Linux AppImage',
+    label: candidate.endsWith('.deb') ? 'Linux deb package' : candidate.endsWith('.rpm') ? 'Linux rpm package' : 'Linux AppImage',
     path: toRelative(rootDir, candidate),
   })))
   report.optionalArtifacts.push(...appImageBlockmaps.map((candidate) => ({
@@ -654,7 +654,7 @@ function inspectLinuxArtifacts(rootDir: string, report: PackageSmokeReport) {
     addMatchCheck(
       report,
       rootDir,
-      'linux packaged artifact (.AppImage or .deb)',
+      'linux packaged artifact (.AppImage, .deb, or .rpm)',
       packagedArtifacts,
       report.artifactsDir,
     )
@@ -664,7 +664,7 @@ function inspectLinuxArtifacts(rootDir: string, report: PackageSmokeReport) {
       path: toRelative(rootDir, report.artifactsDir),
     })
   } else {
-    report.notes.push('No .AppImage or .deb was found; treating linux-unpacked as a directory-only development package.')
+    report.notes.push('No .AppImage, .deb, or .rpm was found; treating linux-unpacked as a directory-only development package.')
   }
 
   if (unpackedDir) {

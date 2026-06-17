@@ -61,7 +61,8 @@
     "linux": {
       "target": [
         "AppImage",
-        "deb"
+        "deb",
+        "rpm"
       ],
       "icon": "src-tauri/icons",
       "category": "Development",
