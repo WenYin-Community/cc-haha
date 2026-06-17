@@ -404,7 +404,7 @@ jobs:
               expected=(
                 "Claude-Code-Haha-${APP_VERSION}-linux-x86_64.AppImage"
                 "Claude-Code-Haha-${APP_VERSION}-linux-amd64.deb"
-                "Claude-Code-Haha-${APP_VERSION}-linux-amd64.rpm"
+                "Claude-Code-Haha-${APP_VERSION}-linux-x86_64.rpm"
                 "latest-linux.yml"
               )
               ;;
@@ -412,7 +412,7 @@ jobs:
               expected=(
                 "Claude-Code-Haha-${APP_VERSION}-linux-arm64.AppImage"
                 "Claude-Code-Haha-${APP_VERSION}-linux-arm64.deb"
-                "Claude-Code-Haha-${APP_VERSION}-linux-arm64.rpm"
+                "Claude-Code-Haha-${APP_VERSION}-linux-aarch64.rpm"
                 "latest-linux-arm64.yml"
               )
               ;;
@@ -541,10 +541,10 @@ jobs:
             "Claude-Code-Haha-${APP_VERSION}-mac-x64.zip.blockmap"
             "Claude-Code-Haha-${APP_VERSION}-linux-x86_64.AppImage"
             "Claude-Code-Haha-${APP_VERSION}-linux-amd64.deb"
-            "Claude-Code-Haha-${APP_VERSION}-linux-amd64.rpm"
+            "Claude-Code-Haha-${APP_VERSION}-linux-x86_64.rpm"
             "Claude-Code-Haha-${APP_VERSION}-linux-arm64.AppImage"
             "Claude-Code-Haha-${APP_VERSION}-linux-arm64.deb"
-            "Claude-Code-Haha-${APP_VERSION}-linux-arm64.rpm"
+            "Claude-Code-Haha-${APP_VERSION}-linux-aarch64.rpm"
             "Claude-Code-Haha-${APP_VERSION}-win-x64.exe"
             "Claude-Code-Haha-${APP_VERSION}-win-x64.exe.blockmap"
           )
