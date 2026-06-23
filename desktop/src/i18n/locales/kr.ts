@@ -1751,6 +1751,7 @@ export const kr: Record<TranslationKey, string> = {
   'trace.copySessionId': 'Session ID 복사',
   'trace.refresh': 'Trace 새로고침',
   'trace.openWindow': '별도 창에서 열기',
+  'trace.delete': 'Trace 삭제',
   'trace.noResponse': '응답 본문이 캡처되지 않았습니다',
   'trace.emptyTitle': '아직 Trace 호출이 없습니다',
   'trace.emptyBody': '이 세션에는 캡처된 모델 호출이 없습니다. 새 데스크톱 세션은 간단한 요청 및 응답 미리보기를 자동으로 기록합니다.',
@@ -1846,6 +1847,9 @@ export const kr: Record<TranslationKey, string> = {
   'trace.list.loadFailed': 'Trace 목록을 불러오지 못했습니다',
   'trace.list.loadedCount': '{shown} / {total} 표시 중',
   'trace.list.loadMore': '더 불러오기',
+  'trace.list.deleteConfirmTitle': 'Trace 세션 삭제',
+  'trace.list.deleteConfirmBody': '"{title}"의 Trace 데이터를 삭제하시겠습니까? 채팅 기록은 삭제되지 않습니다.',
+  'trace.list.deleteFailed': 'Trace 세션을 삭제하지 못했습니다',
 
   // ─── App Shell ──────────────────────────────────────
   'app.serverFailed': '로컬 서버를 시작하지 못했습니다',

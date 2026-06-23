@@ -1148,6 +1148,48 @@ describe('session trace API', () => {
     })
   })
 
+  test('deletes a trace session file and invalidates cached reads', async () => {
+    await traceCaptureService.recordCall({
+      sessionId: 'session-delete-trace',
+      source: 'proxy',
+      model: 'gpt-5.5',
+      startedAt: '2026-06-09T08:00:00.000Z',
+      completedAt: '2026-06-09T08:00:00.015Z',
+      durationMs: 15,
+      request: {
+        method: 'POST',
+        url: 'https://api.example.test/v1/messages',
+        body: { model: 'gpt-5.5' },
+      },
+      response: {
+        status: 200,
+        body: { ok: true },
+      },
+    })
+
+    const cached = await traceCaptureService.getSessionTrace('session-delete-trace')
+    expect(cached.calls).toHaveLength(1)
+
+    const req = new Request('http://localhost:3456/api/traces/session-delete-trace', { method: 'DELETE' })
+    const res = await handleApiRequest(req, new URL(req.url))
+    const body = await res.json() as { sessionId: string; deleted: boolean }
+
+    expect(res.status).toBe(200)
+    expect(body).toEqual({ sessionId: 'session-delete-trace', deleted: true })
+    await expect(fs.stat(path.join(tmpDir, 'cc-haha', 'traces', 'session-delete-trace.jsonl'))).rejects.toThrow()
+
+    const afterDelete = await traceCaptureService.getSessionTrace('session-delete-trace')
+    expect(afterDelete.calls).toEqual([])
+    expect(afterDelete.events).toEqual([])
+
+    const secondReq = new Request('http://localhost:3456/api/traces/session-delete-trace', { method: 'DELETE' })
+    const secondRes = await handleApiRequest(secondReq, new URL(secondReq.url))
+    const secondBody = await secondRes.json() as { sessionId: string; deleted: boolean }
+
+    expect(secondRes.status).toBe(200)
+    expect(secondBody).toEqual({ sessionId: 'session-delete-trace', deleted: false })
+  })
+
   test('searches trace sessions by session title and project path before paginating', async () => {
     await traceCaptureService.recordCall({
       sessionId: 'session-title-alpha',

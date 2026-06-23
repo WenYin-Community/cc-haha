@@ -1751,6 +1751,7 @@ export const jp: Record<TranslationKey, string> = {
   'trace.copySessionId': 'Session ID をコピー',
   'trace.refresh': 'Trace を更新',
   'trace.openWindow': '別ウィンドウで開く',
+  'trace.delete': 'Trace を削除',
   'trace.noResponse': 'レスポンス本文はキャプチャされていません',
   'trace.emptyTitle': 'Trace 呼び出しはまだありません',
   'trace.emptyBody': 'このセッションにはキャプチャ済みのモデル呼び出しがありません。新しいデスクトップセッションでは、軽量なリクエストとレスポンスのプレビューを自動記録します。',
@@ -1846,6 +1847,9 @@ export const jp: Record<TranslationKey, string> = {
   'trace.list.loadFailed': 'Trace 一覧の読み込みに失敗しました',
   'trace.list.loadedCount': '{shown} / {total} を表示中',
   'trace.list.loadMore': 'さらに読み込む',
+  'trace.list.deleteConfirmTitle': 'Trace セッションを削除',
+  'trace.list.deleteConfirmBody': '「{title}」の Trace データを削除しますか？チャット履歴は削除されません。',
+  'trace.list.deleteFailed': 'Trace セッションの削除に失敗しました',
 
   // ─── App Shell ──────────────────────────────────────
   'app.serverFailed': 'ローカルサーバーの起動に失敗しました',

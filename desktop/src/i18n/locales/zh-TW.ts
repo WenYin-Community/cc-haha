@@ -1751,6 +1751,7 @@ export const zh: Record<TranslationKey, string> = {
   'trace.copySessionId': '複製 Session ID',
   'trace.refresh': '重新整理 Trace',
   'trace.openWindow': '在獨立視窗開啟',
+  'trace.delete': '刪除 Trace',
   'trace.noResponse': '未捕獲回應正文',
   'trace.emptyTitle': '暫無 Trace 呼叫',
   'trace.emptyBody': '這個會話還沒有捕獲到模型呼叫。新的桌面會話會自動記錄精簡的請求和回應預覽。',
@@ -1846,6 +1847,9 @@ export const zh: Record<TranslationKey, string> = {
   'trace.list.loadFailed': 'Trace 列表載入失敗',
   'trace.list.loadedCount': '已顯示 {shown} / {total}',
   'trace.list.loadMore': '載入更多',
+  'trace.list.deleteConfirmTitle': '刪除 Trace 會話',
+  'trace.list.deleteConfirmBody': '刪除「{title}」的 Trace 資料？聊天記錄不會被刪除。',
+  'trace.list.deleteFailed': 'Trace 會話刪除失敗',
 
   // ─── 應用外殼 ──────────────────────────────────────
   'app.serverFailed': '本地服務啟動失敗',
