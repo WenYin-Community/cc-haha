@@ -712,6 +712,21 @@ async function getGitInfo(sessionId: string): Promise<Response> {
       }
     : null
 
+  // Fast check: if workDir is not inside a git repo, skip spawning git commands.
+  // findGitRoot uses fs.stat traversal with LRU cache (<5ms), avoiding 3 slow git
+  // spawns on non-git directories (each can take seconds as git searches upward).
+  const gitRoot = findGitRoot(workDir)
+  if (!gitRoot) {
+    const dirName = workDir.split('/').pop() || workDir.split(path.sep).pop() || ''
+    return Response.json({
+      branch: sessionBranch,
+      repoName: dirName,
+      workDir,
+      changedFiles: 0,
+      worktree,
+    })
+  }
+
   try {
     // Get branch name
     const branchProc = Bun.spawn(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], {
