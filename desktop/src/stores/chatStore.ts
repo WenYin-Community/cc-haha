@@ -9,9 +9,8 @@ import { useTabStore } from './tabStore'
 import { randomSpinnerVerb } from '../config/spinnerVerbs'
 import { notifyDesktop } from '../lib/desktopNotifications'
 import { deriveSessionTitle, isPlaceholderSessionTitle } from '../lib/sessionTitle'
-import { formatDurationSeconds, hasRunningBackgroundTasks } from '../lib/backgroundTasks'
+import { hasRunningBackgroundTasks } from '../lib/backgroundTasks'
 import { AGENT_LIFECYCLE_TYPES } from '../types/team'
-import { t } from '../i18n'
 import type { ComposerAttachment } from '../lib/composerAttachments'
 import type { MessageEntry } from '../types/session'
 import type { PermissionMode } from '../types/settings'
@@ -112,7 +111,6 @@ export type PerSessionState = {
   slashCommands: Array<{ name: string; description: string; argumentHint?: string }>
   agentTaskNotifications: Record<string, AgentTaskNotification>
   backgroundAgentTasks?: Record<string, BackgroundAgentTask>
-  pendingCompletedTurnElapsedSeconds?: number | null
   suppressNextTaskNotificationResponse?: boolean
   activeGoal?: ActiveGoalState | null
   elapsedTimer: ReturnType<typeof setInterval> | null
@@ -150,7 +148,6 @@ const DEFAULT_SESSION_STATE: PerSessionState = {
   slashCommands: [],
   agentTaskNotifications: {},
   backgroundAgentTasks: {},
-  pendingCompletedTurnElapsedSeconds: null,
   suppressNextTaskNotificationResponse: false,
   activeGoal: null,
   elapsedTimer: null,
@@ -501,24 +498,6 @@ function appendAssistantTextMessage(
   ]
 }
 
-function appendCompletedTurnDurationMessage(
-  messages: UIMessage[],
-  elapsedSeconds: number,
-  timestamp: number,
-): UIMessage[] {
-  if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return messages
-  const duration = formatDurationSeconds(elapsedSeconds, t, 1)
-  return [
-    ...messages,
-    {
-      id: nextId(),
-      type: 'system',
-      content: t('chat.turnCompleted', { duration }),
-      timestamp,
-    },
-  ]
-}
-
 function extractCompactSummaryContent(content: unknown): string | null {
   if (typeof content !== 'string') return null
   const trimmed = content.trim()
@@ -637,25 +616,13 @@ function buildBackgroundTaskSessionUpdate(
   task: BackgroundAgentTask | undefined,
   timestamp: number,
 ): Partial<PerSessionState> {
-  let messages = task
+  const messages = task
     ? upsertBackgroundTaskMessage(session.messages, task, timestamp)
     : session.messages
-  const shouldAppendDelayedCompletion =
-    session.pendingCompletedTurnElapsedSeconds != null &&
-    !hasRunningBackgroundTasks(backgroundAgentTasks)
-
-  if (shouldAppendDelayedCompletion) {
-    messages = appendCompletedTurnDurationMessage(
-      messages,
-      session.pendingCompletedTurnElapsedSeconds ?? 0,
-      timestamp,
-    )
-  }
 
   return {
     backgroundAgentTasks,
     ...(messages !== session.messages ? { messages } : {}),
-    ...(shouldAppendDelayedCompletion ? { pendingCompletedTurnElapsedSeconds: null } : {}),
   }
 }
 
@@ -1100,16 +1067,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const pendingAssistantText = `${session.streamingText}${bufferedDelta}`
       const now = Date.now()
 
-      let newMessages = pendingAssistantText.trim()
+      const newMessages = pendingAssistantText.trim()
         ? appendAssistantTextMessage(session.messages, pendingAssistantText, now)
         : [...session.messages]
-      if (session.pendingCompletedTurnElapsedSeconds != null) {
-        newMessages = appendCompletedTurnDurationMessage(
-          newMessages,
-          session.pendingCompletedTurnElapsedSeconds,
-          now,
-        )
-      }
       if (!isMemberSession && allTasksDone) {
         newMessages.push({
           id: nextId(),
@@ -1144,7 +1104,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             messages: newMessages,
             chatState: 'thinking',
             elapsedSeconds: 0,
-            pendingCompletedTurnElapsedSeconds: null,
             suppressNextTaskNotificationResponse: false,
             streamingText: '',
             streamingResponseChars: 0,
@@ -1255,9 +1214,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             pendingComputerUsePermission: null,
             apiRetry: null,
             streamingFallback: null,
-            pendingCompletedTurnElapsedSeconds: hasRunningBackgroundAgents
-              ? session.pendingCompletedTurnElapsedSeconds ?? null
-              : null,
             suppressNextTaskNotificationResponse: false,
             elapsedTimer: null,
           },
@@ -1395,7 +1351,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             statusVerb: '',
             apiRetry: null,
             streamingFallback: null,
-            pendingCompletedTurnElapsedSeconds: null,
           })),
         }
       })
@@ -1581,7 +1536,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       chatState: 'idle',
       apiRetry: null,
       streamingFallback: null,
-      pendingCompletedTurnElapsedSeconds: null,
       suppressNextTaskNotificationResponse: false,
       queuedUserMessages: [],
     })) }))
@@ -2049,7 +2003,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
         const completedAt = Date.now()
         const wasAgentRunning = session.chatState !== 'idle'
-        const hasQueuedUserMessages = (session.queuedUserMessages?.length ?? 0) > 0
         const text = `${session.streamingText}${consumePendingDelta(sessionId)}`
         let completionMessages = session.messages
         if (text.trim()) {
@@ -2062,11 +2015,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           update(() => ({ streamingText: text }))
         }
         const appendedCompletionMessage = completionMessages !== session.messages
-        const stoppedMessages = markPendingToolUseMessagesStopped(completionMessages)
+        const finalMessages = markPendingToolUseMessagesStopped(completionMessages)
         const hasRunningBackgroundAgents = hasRunningBackgroundTasks(session.backgroundAgentTasks)
-        const finalMessages = wasAgentRunning && !hasQueuedUserMessages && !hasRunningBackgroundAgents
-          ? appendCompletedTurnDurationMessage(stoppedMessages, session.elapsedSeconds, completedAt)
-          : stoppedMessages
         if (session.elapsedTimer) clearInterval(session.elapsedTimer)
         update(() => ({
           messages: finalMessages,
@@ -2078,9 +2028,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           elapsedTimer: null,
           apiRetry: null,
           streamingFallback: null,
-          pendingCompletedTurnElapsedSeconds: wasAgentRunning && !hasQueuedUserMessages && hasRunningBackgroundAgents
-            ? session.elapsedSeconds
-            : null,
         }))
         useTabStore.getState().updateTabStatus(sessionId, hasRunningBackgroundAgents ? 'running' : 'idle')
         const notification = wasAgentRunning && appendedCompletionMessage
@@ -2217,7 +2164,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             slashCommands: [],
             activeGoal: null,
             backgroundAgentTasks: {},
-            pendingCompletedTurnElapsedSeconds: null,
             agentTaskNotifications: {},
           }))
           clearPendingDelta(sessionId)

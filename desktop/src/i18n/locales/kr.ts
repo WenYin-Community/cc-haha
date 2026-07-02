@@ -1925,7 +1925,6 @@ export const kr: Record<TranslationKey, string> = {
   'chat.retry.retrying': '지금 다시 시도 중…',
   'chat.fallback.title': '네트워크 불안정으로 비스트리밍 모드로 전환됨',
   'chat.fallback.detail': '응답이 한 번에 도착하므로 시간이 걸릴 수 있습니다',
-  'chat.turnCompleted': '완료됨 ({duration})',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': '닫기',

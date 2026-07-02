@@ -1923,7 +1923,6 @@ export const en = {
   'chat.retry.retrying': 'retrying now…',
   'chat.fallback.title': 'Network hiccup — switched to non-streaming mode',
   'chat.fallback.detail': 'response arrives in one piece, this can take a while',
-  'chat.turnCompleted': 'Completed in {duration}',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': 'Close',

@@ -3390,7 +3390,7 @@ describe('chatStore history mapping', () => {
     vi.useRealTimers()
   })
 
-  it('adds a completed turn duration after a running response finishes', () => {
+  it('does not append completed turn duration after a running response finishes', () => {
     useChatStore.setState({
       sessions: {
         [TEST_SESSION_ID]: makeSession({
@@ -3412,14 +3412,13 @@ describe('chatStore history mapping', () => {
         type: 'assistant_text',
         content: 'Finished answer',
       },
-      {
-        type: 'system',
-        content: 'Completed in 1m 5s',
-      },
     ])
+    expect(useChatStore.getState().sessions[TEST_SESSION_ID]?.messages).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'system', content: expect.stringContaining('Completed in') }),
+    ]))
   })
 
-  it('localizes completed turn duration units', () => {
+  it('does not append localized completed turn duration after a running response finishes', () => {
     useSettingsStore.setState({ locale: 'zh' })
     useChatStore.setState({
       sessions: {
@@ -3442,11 +3441,10 @@ describe('chatStore history mapping', () => {
         type: 'assistant_text',
         content: 'Finished answer',
       },
-      {
-        type: 'system',
-        content: '已完成，用时 1 分 5 秒',
-      },
     ])
+    expect(useChatStore.getState().sessions[TEST_SESSION_ID]?.messages).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'system', content: expect.stringContaining('已完成，用时') }),
+    ]))
   })
 
   it('keeps background agent sessions visibly running when the foreground turn completes', () => {
@@ -3491,7 +3489,7 @@ describe('chatStore history mapping', () => {
     expect(updateTabStatusMock).toHaveBeenLastCalledWith(TEST_SESSION_ID, 'running')
   })
 
-  it('marks the tab idle and appends the delayed completion when the last background agent task finishes after the foreground turn', () => {
+  it('marks the tab idle without appending delayed completion when the last background agent task finishes after the foreground turn', () => {
     useChatStore.setState({
       sessions: {
         [TEST_SESSION_ID]: makeSession({
@@ -3532,8 +3530,8 @@ describe('chatStore history mapping', () => {
     })
 
     expect(updateTabStatusMock).toHaveBeenLastCalledWith(TEST_SESSION_ID, 'idle')
-    expect(useChatStore.getState().sessions[TEST_SESSION_ID]?.messages).toEqual(expect.arrayContaining([
-      expect.objectContaining({ type: 'system', content: 'Completed in 1m 5s' }),
+    expect(useChatStore.getState().sessions[TEST_SESSION_ID]?.messages).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'system', content: expect.stringContaining('Completed in') }),
     ]))
   })
 
@@ -3595,7 +3593,7 @@ describe('chatStore history mapping', () => {
     expect(updateTabStatusMock).toHaveBeenLastCalledWith(TEST_SESSION_ID, 'idle')
   })
 
-  it('flushes a delayed completion before a new user turn while background tasks keep running', () => {
+  it('does not flush a delayed completion before a new user turn while background tasks keep running', () => {
     useChatStore.setState({
       sessions: {
         [TEST_SESSION_ID]: makeSession({
@@ -3626,7 +3624,6 @@ describe('chatStore history mapping', () => {
 
     expect(useChatStore.getState().sessions[TEST_SESSION_ID]?.messages).toMatchObject([
       { type: 'assistant_text', content: 'Finished answer' },
-      { type: 'system', content: 'Completed in 1m 5s' },
       { type: 'user_text', content: 'Continue with next step' },
     ])
 
@@ -3643,7 +3640,7 @@ describe('chatStore history mapping', () => {
 
     const completedRows = useChatStore.getState().sessions[TEST_SESSION_ID]?.messages
       .filter((message) => message.type === 'system' && message.content === 'Completed in 1m 5s')
-    expect(completedRows).toHaveLength(1)
+    expect(completedRows).toHaveLength(0)
   })
 
   it('tracks API retry status until the request finishes', () => {

@@ -1925,7 +1925,6 @@ export const jp: Record<TranslationKey, string> = {
   'chat.retry.retrying': '再試行しています…',
   'chat.fallback.title': 'ネットワーク不調のため非ストリーミングに切替',
   'chat.fallback.detail': '応答は一括で届くため時間がかかることがあります',
-  'chat.turnCompleted': '完了しました（{duration}）',
 
   // ─── Tabs ──────────────────────────────────────
   'tabs.close': '閉じる',
