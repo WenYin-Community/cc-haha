@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@xterm/xterm/css/xterm.css";
 @plugin "@tailwindcss/typography";
 
 /* ─── Self-hosted fonts (no Google CDN dependency) ────────────── */
@@ -128,6 +127,36 @@
 
 .settings-terminal-host .xterm-screen {
   outline: none;
+}
+
+.settings-terminal-host .xterm-accessibility:not(.debug),
+.settings-terminal-host .xterm-message {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  color: transparent;
+  pointer-events: none;
+}
+
+.settings-terminal-host .xterm-accessibility-tree {
+  color: transparent;
+  pointer-events: none;
+}
+
+.settings-terminal-host .xterm-helper-textarea {
+  position: absolute;
+  top: 0;
+  left: -9999em;
+  z-index: -5;
+  width: 0;
+  height: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  resize: none;
+  white-space: nowrap;
 }
 
 .settings-checkbox-input {
