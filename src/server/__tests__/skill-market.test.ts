@@ -715,6 +715,20 @@ describe('skill market risk analysis', () => {
     expect(risk).toEqual(['requires-api-key'])
   })
 
+  it('does not treat similarly named fields as allowed tools or hooks', () => {
+    const risk = analyzeSkillRisk({
+      entryContent: [
+        '---',
+        'disallowed-tools: Bash',
+        'webhooks: https://example.com/callback',
+        '---',
+      ].join('\n'),
+      files: [],
+    })
+
+    expect(risk).toEqual(['external-network'])
+  })
+
   it('returns an empty array when no conservative risks are detected', () => {
     const risk = analyzeSkillRisk({
       entryContent: 'A local-only skill with no special permissions.',

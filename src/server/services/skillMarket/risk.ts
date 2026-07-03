@@ -11,6 +11,8 @@ const RISK_LABEL_ORDER: SkillMarketRiskLabel[] = [
 
 const EXECUTABLE_EXTENSION = /\.(sh|bash|zsh|fish|ps1|cmd|bat|py|js|ts)$/i
 const API_KEYWORD = /api[\s_-]?key|token|secret/i
+const ALLOWED_TOOLS_KEY = /^\s*allowed-tools\s*:/m
+const HOOKS_KEY = /^\s*hooks\s*:/m
 
 export function analyzeSkillRisk(input: {
   entryContent?: string
@@ -19,13 +21,12 @@ export function analyzeSkillRisk(input: {
 }): SkillMarketRiskLabel[] {
   const labels = new Set<SkillMarketRiskLabel>()
   const entryContent = input.entryContent ?? ''
-  const entryLines = entryContent.split(/\r?\n/)
 
-  if (entryLines.some((line) => line.includes('allowed-tools:'))) {
+  if (ALLOWED_TOOLS_KEY.test(entryContent)) {
     labels.add('allowed-tools')
   }
 
-  if (entryLines.some((line) => line.includes('hooks:'))) {
+  if (HOOKS_KEY.test(entryContent)) {
     labels.add('hooks')
   }
 
